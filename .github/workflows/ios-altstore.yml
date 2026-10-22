@@ -1,0 +1,55 @@
+name: Build iPhone app for AltStore
+run-name: AltStore IPA ${{ github.run_number }}.${{ github.run_attempt }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-altstore-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      IOS_BUNDLE_ID: com.aargentina.roomcapture
+      PYTHONUTF8: '1'
+      PYTHONIOENCODING: utf-8
+    steps:
+      - name: Get the source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Test the IPA packager
+        run: python3 -m unittest discover -s tools/ios -p 'test_*.py' -v
+      - name: Build and package the unsigned app
+        run: bash tools/ios/build_altstore.sh
+      - name: Save the IPA and install guide
+        id: artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: room-capture-altstore-${{ github.run_number }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ios-altstore/output/
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+      - name: Show the download link
+        env:
+          ARTIFACT_URL: ${{ steps.artifact.outputs.artifact-url }}
+        run: |
+          {
+            echo '## iPhone app for AltStore Classic'
+            echo
+            printf '[Download the build files](%s)\n' "$ARTIFACT_URL"
+            echo
+            echo 'Extract the downloaded ZIP. Install RoomCapture.ipa through AltStore Classic.'
+            echo 'This IPA is unsigned. It cannot open until AltStore signs it with your free Apple Account.'
+            echo 'Free signing expires after seven days. The download is kept for seven days.'
+            echo 'LiDAR is required for scanning. Other supported devices can import and review scans.'
+          } >> "$GITHUB_STEP_SUMMARY"

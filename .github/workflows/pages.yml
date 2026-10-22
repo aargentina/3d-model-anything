@@ -12,6 +12,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
+    if: github.repository == 'wesbos/3d-model-anything'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
