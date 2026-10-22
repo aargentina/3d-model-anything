@@ -34,6 +34,9 @@ See [the iPhone app](apps/house-capture/README.md) for building with Xcode, devi
 
 The app is source-available here; an App Store release is a separate distribution step. Do not assume an App Store download is available yet.
 
+For a free personal install from Windows, see [the AltStore Classic build guide](docs/ios-altstore.md).
+The manual GitHub Actions workflow builds an unsigned IPA on a hosted Mac. AltStore signs it with your free Apple Account; signing must be refreshed every seven days.
+
 Export a room or session through the system share sheet and extract it into an ignored `data/captures-in/<room>/` directory. Exports keep the existing `house-capture/5` contract; changing the app name does not change the files.
 
 ## Use the skill
